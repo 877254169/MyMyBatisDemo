@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jam.repository.ClassesRepository">
+
+    <resultMap id="classesMap" type="cn.jam.entity.Classes">
+        <id column="cid" property="id"/>
+        <result column="cname" property="name"/>
+        <collection property="students" ofType="cn.jam.entity.Student">
+            <id column="sid" property="id"/>
+            <result column="sname" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="classesMap">
+        select c.id as cid, c.name as cname, s.id as sid, s.name as sname
+        from t_classes c
+        left join t_student s
+        on c.id = s.cid
+        where c.id = #{id};
+    </select>
+
+    <select id="findByIdLazy" parameterType="long" resultType="cn.jam.entity.Classes">
+        select * from t_classes where id = #{id};
+    </select>
+</mapper>

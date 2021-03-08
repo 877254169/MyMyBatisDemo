@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jam.repository.CustomerRepository">
+
+    <resultMap id="customerMap" type="cn.jam.entity.Customer">
+        <id column="cid" property="id"/>
+        <result column="cname" property="name"/>
+        <collection property="goods" ofType="cn.jam.entity.Goods">
+            <id column="gid" property="id"/>
+            <result column="gname" property="name"/>
+        </collection>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="customerMap">
+        select c.id as cid, c.name as cname, g.id as gid, g.name as gname
+        from t_customer c
+        left join t_customer_goods cg
+        on c.id = cg.cid
+        left join t_goods g
+        on cg.gid = g.id
+        where c.id = #{id};
+    </select>
+</mapper>

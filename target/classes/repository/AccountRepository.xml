@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.jam.repository.AccountRepository">
+
+    <!-- 开启二级缓存 -->
+<!--    <cache/>-->
+    <!-- 开启ehcache二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.EhcacheCache">
+        <!-- 最后一次访问后，多久后失效 -->
+        <property name="timeToIdleSeconds" value="3600"/>
+        <!-- 缓存第一次创建后，多久失效 -->
+        <property name="timeToLiveSeconds" value="3600"/>
+        <!-- 缓存回收策略 LRU:移出近期使用最少的对象-->
+        <property name="memoryStoreEvictionPolicy" value="LRU"/>
+    </cache>
+
+    <insert id="save" parameterType="cn.jam.entity.Account">
+        insert into t_account(username, password, age) values(#{username}, #{password}, #{age});
+    </insert>
+
+    <update id="update" parameterType="cn.jam.entity.Account">
+        update t_account set username = #{username}, password = #{password}, age = #{age} where id = #{id};
+    </update>
+
+    <delete id="deleteById" parameterType="long">
+        delete from t_account where id = #{id};
+    </delete>
+
+    <select id="findAll" resultType="cn.jam.entity.Account">
+        select * from t_account;
+    </select>
+
+    <select id="findById" parameterType="long" resultType="cn.jam.entity.Account">
+        select * from t_account where id = #{id};
+    </select>
+
+    <select id="findByUserName" parameterType="java.lang.String" resultType="cn.jam.entity.Account">
+        select * from t_account where username = #{username};
+    </select>
+
+    <!-- 这里的查询去参数可以用param1/param2，也可以用arg0/arg1，他们起始下标不同 -->
+    <select id="findByUserNameAndAge" resultType="cn.jam.entity.Account">
+        select * from t_account where username = #{arg0} and age = #{arg1};
+    </select>
+
+    <select id="count" resultType="int">
+        select count(1) from t_account;
+    </select>
+
+    <select id="findByAccount" parameterType="cn.jam.entity.Account" resultType="cn.jam.entity.Account">
+        select * from t_account
+        <!-- where标签可以知道如果它包含的内容不为空，就自动在前面加上where，如果返回内容以and、or开头，就会把他们删掉 -->
+        <where>
+            <if test="id != 0">
+                and id = #{id}
+            </if>
+            <if test="username != null">
+                and username = #{username}
+            </if>
+            <if test="password != null">
+                and password = #{password}
+            </if>
+            <if test="age != 0">
+                and age = #{age}
+            </if>
+        </where>
+    </select>
+
+    <!-- choose/when相当于Java的switch，otherwise则是所有when都没满足时执行 -->
+    <select id="findByAccount2" parameterType="cn.jam.entity.Account" resultType="cn.jam.entity.Account">
+        select * from t_account
+        <where>
+            <choose>
+                <when test="id != 0">
+                    id = #{id}
+                </when>
+                <when test="username != null">
+                    username = #{username}
+                </when>
+                <when test="password != null">
+                    password = #{password}
+                </when>
+                <when test="age != 0">
+                    age = #{age}
+                </when>
+                <otherwise>
+
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <!-- trim标签会知道如果标签返回的内容不为空，就会自动加上prefix的内容，同时如果开头部分包含prefixoverrides的内容，就会覆盖 -->
+    <select id="findByAccount3" parameterType="cn.jam.entity.Account" resultType="cn.jam.entity.Account">
+        select * from t_account
+        <trim prefix="where" prefixOverrides="and|or">
+            <if test="id != 0">
+                or id = #{id}
+            </if>
+            <if test="username != null">
+                and username = #{username}
+            </if>
+            <if test="password != null">
+                and password = #{password}
+            </if>
+            <if test="age != 0">
+                and age = #{age}
+            </if>
+        </trim>
+    </select>
+
+    <!-- set标签可以动态的设置要更新的字段，每个设值的语句后记得加逗号，如果返回的结果最后多了一个逗号，会自动去掉 -->
+    <update id="update2" parameterType="cn.jam.entity.Account">
+        update t_account
+        <set>
+            <if test="username != null">
+                username = #{username},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="age != 0">
+                age = #{age}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="findByIds" parameterType="cn.jam.entity.Account" resultType="cn.jam.entity.Account">
+        select * from t_account
+        <where>
+            <!-- collection和属性名对应 -->
+            <foreach collection="ids" open="id in (" close=")" item="id" separator=",">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+</mapper>
